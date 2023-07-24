@@ -6,6 +6,7 @@ TelegramMessageExtractor is a Python script that simplifies the process of extra
 - Processes all HTML files in a specified subdirectory
 - Saves the extracted messages in a CSV or TXT file
 - Provides a progress bar to visualize the extraction process
+- Filters out every character outside the ASCII set and Ä, ä, Ö and ö
 
 ## Prerequisites
 - Python 3.x

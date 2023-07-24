@@ -7,23 +7,34 @@ from tqdm import tqdm
 
 # Function to extract message texts from HTML content
 def extract_message_texts(html_content):
-    soup = BeautifulSoup(html_content, 'html.parser')
-    messages = soup.find_all('div', class_='text')
-    texts = [message.get_text(strip=True) for message in messages]
-    return texts
+    soup: BeautifulSoup = BeautifulSoup(html_content, 'html.parser')
+    messages: list[BeautifulSoup] = soup.find_all('div', class_='text')
+    
+    # Replace <br> tags with newline characters before extracting text
+    for message in messages:
+        for br in message.find_all("br"):
+            br.replace_with("\n")
 
-# Function to process all HTML files in a subdirectory
-def process_html_files(subdirectory):
+    texts = [message.get_text() for message in messages]
+
+    # Filter out non-alphanumeric characters leave in newlines and spaces and ÄÖäö
+    filtered_texts = [re.sub(r'[^A-Za-z0-9ÄÖäö\n ]+', '', text) for text in texts]
+
+    return filtered_texts
+
+# Function to process all HTML files in a directory and its subdirectories
+def process_html_files(directory):
     message_texts = []
 
-    html_files = [f for f in os.listdir(subdirectory) if f.endswith('.html')]
-    for filename in tqdm(html_files, desc="Processing HTML files"):
-        filepath = os.path.join(subdirectory, filename)
-        
-        with open(filepath, 'r', encoding='utf-8') as f:
-            html_content = f.read()
+    for root, dirs, files in os.walk(directory):
+        html_files = [f for f in files if f.endswith('.html')]
+        for filename in tqdm(html_files, desc="Processing HTML files"):
+            filepath = os.path.join(root, filename)
+            
+            with open(filepath, 'r', encoding='utf-8') as f:
+                html_content = f.read()
 
-        message_texts.extend(extract_message_texts(html_content))
+            message_texts.extend(extract_message_texts(html_content))
 
     return message_texts
 
